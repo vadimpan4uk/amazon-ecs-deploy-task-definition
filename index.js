@@ -248,6 +248,11 @@ async function createCodeDeployDeployment(codedeploy, clusterName, service, task
 }
 
 async function run() {
+  const cluster = core.getInput('cluster', { required: false });
+
+  const subnets = core.getInput('subnets', { required: true }).split(',');
+  const sg = core.getInput('sg', { required: false });
+  let taskDefArn;
   try {
     const ecs = new aws.ECS({
       customUserAgent: 'amazon-ecs-deploy-task-definition-for-github-actions'
@@ -259,10 +264,7 @@ async function run() {
     // Get inputs
     const taskDefinitionFile = core.getInput('task-definition', { required: true });
     const service = core.getInput('service', { required: false });
-    const cluster = core.getInput('cluster', { required: false });
-
-    const subnets = core.getInput('subnets', { required: true }).split(',');
-    const sg = core.getInput('sg', { required: false });
+    
 
     const waitForService = core.getInput('wait-for-service-stability', { required: false });
     let waitForMinutes = parseInt(core.getInput('wait-for-minutes', { required: false })) || 30;
@@ -289,7 +291,7 @@ async function run() {
       core.debug(JSON.stringify(taskDefContents, undefined, 4));
       throw(error);
     }
-    const taskDefArn = registerResponse.taskDefinition.taskDefinitionArn;
+    taskDefArn = registerResponse.taskDefinition.taskDefinitionArn;
     core.setOutput('task-definition-arn', taskDefArn);
 
     // Update the service with the new task definition
@@ -341,7 +343,21 @@ async function run() {
     }
   }
   catch (error) {
-    core.setFailed(error.message);
+    const clusterName = cluster ? cluster : 'default';
+
+    core.setFailed(`${error.message}. JSON: ${JSON.stringify({
+      cluster: clusterName,
+      taskDefinition: taskDefArn,
+      launchType: "FARGATE",
+      count: 1,
+      networkConfiguration: {
+        awsvpcConfiguration: {
+          subnets: subnets,
+          securityGroups: [sg],
+          assignPublicIp: 'DISABLED'
+        }
+      }
+    })}`);
     core.debug(error.stack);
   }
 }
