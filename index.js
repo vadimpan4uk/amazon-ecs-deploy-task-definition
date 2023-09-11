@@ -322,7 +322,7 @@ async function run() {
       const clusterName = cluster ? cluster : 'default';
       await ecs.runTask({
         cluster: clusterName,
-        taskDefinition: `${registerResponse.taskDefinition.family}:${registerResponse.taskDefinition.revision}`
+        taskDefinition: taskDefArn
       }).promise()
     }
   }
