@@ -21,6 +21,9 @@ inputs:
   subnets:
     description: 'VPC subnets'
     required: true
+  sg:
+    description: 'Security Groups'
+    required: false
   wait-for-service-stability:
     description:
       'Whether to wait for the ECS service to reach stable state after deploying

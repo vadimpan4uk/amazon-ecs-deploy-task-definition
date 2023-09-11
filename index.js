@@ -261,7 +261,8 @@ async function run() {
     const service = core.getInput('service', { required: false });
     const cluster = core.getInput('cluster', { required: false });
 
-    const subnets = core.getInput('subnets', { required: true });
+    const subnets = core.getInput('subnets', { required: true }).split(',');
+    const sg = core.getInput('sg', { required: false });
 
     const waitForService = core.getInput('wait-for-service-stability', { required: false });
     let waitForMinutes = parseInt(core.getInput('wait-for-minutes', { required: false })) || 30;
@@ -327,9 +328,12 @@ async function run() {
       await ecs.runTask({
         cluster: clusterName,
         taskDefinition: taskDefArn,
+        launchType: "FARGATE",
+        count: 1,
         networkConfiguration: {
           awsvpcConfiguration: {
-            subnets
+            subnets,
+            securityGroups: sg
           }
         }
       }).promise()
