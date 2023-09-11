@@ -260,6 +260,9 @@ async function run() {
     const taskDefinitionFile = core.getInput('task-definition', { required: true });
     const service = core.getInput('service', { required: false });
     const cluster = core.getInput('cluster', { required: false });
+
+    const subnets = core.getInput('subnets', { required: true });
+
     const waitForService = core.getInput('wait-for-service-stability', { required: false });
     let waitForMinutes = parseInt(core.getInput('wait-for-minutes', { required: false })) || 30;
     if (waitForMinutes > MAX_WAIT_MINUTES) {
@@ -320,9 +323,15 @@ async function run() {
     } else {
       core.debug('Service was not specified, no service updated');
       const clusterName = cluster ? cluster : 'default';
+
       await ecs.runTask({
         cluster: clusterName,
-        taskDefinition: taskDefArn
+        taskDefinition: taskDefArn,
+        networkConfiguration: {
+          awsvpcConfiguration: {
+            subnets
+          }
+        }
       }).promise()
     }
   }
