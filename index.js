@@ -333,7 +333,7 @@ async function run() {
         networkConfiguration: {
           awsvpcConfiguration: {
             subnets,
-            securityGroups: sg
+            securityGroups: [sg]
           }
         }
       }).promise()
