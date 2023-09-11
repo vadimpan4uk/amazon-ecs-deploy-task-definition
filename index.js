@@ -319,6 +319,11 @@ async function run() {
       }
     } else {
       core.debug('Service was not specified, no service updated');
+      const clusterName = cluster ? cluster : 'default';
+      await ecs.runTask({
+        cluster: clusterName,
+        taskDefinition: `${registerResponse.taskDefinition.family}:${registerResponse.taskDefinition.revision}`
+      }).promise()
     }
   }
   catch (error) {
