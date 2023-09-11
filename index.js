@@ -332,7 +332,7 @@ async function run() {
         count: 1,
         networkConfiguration: {
           awsvpcConfiguration: {
-            subnets,
+            subnets: subnets,
             securityGroups: [sg],
             assignPublicIp: 'DISABLED'
           }
